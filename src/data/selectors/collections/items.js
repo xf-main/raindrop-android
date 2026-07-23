@@ -122,10 +122,7 @@ export const makeTreeFlat = ()=> createSelector(
 )
 
 //Status
-export const makeCollectionsStatus = ()=> createSelector(
-	[_collectionsStatus],
-	(status)=>status
-)
+export const makeCollectionsStatus = ()=>_collectionsStatus
 
 //Collection itself and all childrens
 export const makeBranchIds = () => createSelector(

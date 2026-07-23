@@ -1,13 +1,13 @@
 import styled from 'styled-components/native'
 import { StyleSheet, Platform } from 'react-native'
-import { TouchableOpacity } from 'react-native-gesture-handler'
-import { FlatList } from 'react-native-gesture-handler'
+import { Touchable } from 'react-native-gesture-handler'
+import { LegacyFlatList as FlatList } from 'react-native-gesture-handler'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 //Covers
 export const coverHeight = 70
 
-export const CoverTap = styled(TouchableOpacity)``
+export const CoverTap = styled(Touchable).attrs({ activeOpacity: 0.2 })``
 
 export const CoverView = styled.View`
 	width: 106px;

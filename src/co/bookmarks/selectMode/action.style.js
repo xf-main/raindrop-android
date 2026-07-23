@@ -1,12 +1,12 @@
 import styled from 'styled-components/native'
 import _ from 'lodash-es'
-import { TouchableOpacity } from 'react-native-gesture-handler'
+import { Touchable } from 'react-native-gesture-handler'
 
 export const Container = styled.View`
     flex: 1;
 `
 
-export const Button = styled(TouchableOpacity)`
+export const Button = styled(Touchable).attrs({ activeOpacity: 0.2 })`
     flex: 1;
     align-items: center;
     justify-content: center;

@@ -10,7 +10,8 @@ export default function BookmarkEditHeader({ status, item, navigation }) {
 
     useEffect(()=>{
         let isNowSaved = false;
-        try { isNowSaved = isThisMinute(parseISO(item.created), new Date()) } catch(e){console.log(e)}
+        //date-fns 3+ removed argument type checks: parseISO(null) throws instead of returning Invalid Date
+        try { isNowSaved = !!item.created && isThisMinute(parseISO(item.created), new Date()) } catch(e){console.log(e)}
 
         navigation.setOptions({
             title: status == 'new' ? 

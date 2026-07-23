@@ -1,7 +1,7 @@
 import { createRef, Fragment, PureComponent } from 'react';
 import t from 't'
 import { Linking, Alert } from 'react-native'
-import { TouchableOpacity } from 'react-native-gesture-handler'
+import { Touchable } from 'react-native-gesture-handler'
 import { connect } from 'react-redux'
 import { registerWithPassword } from 'data/actions/user'
 import { userStatus, errorReason } from 'data/selectors/user'
@@ -101,14 +101,14 @@ class AuthEmailRegister extends PureComponent {
 						<Fragment key={i}>
 							<SubInfoText>{part}</SubInfoText>
 							{i === 0 && (
-								<TouchableOpacity onPress={this.onTerms}>
+								<Touchable activeOpacity={0.2} onPress={this.onTerms}>
 									<SubInfoLink>{t.s('termsOfService')}</SubInfoLink>
-								</TouchableOpacity>
+								</Touchable>
 							)}
 							{i === 1 && (
-								<TouchableOpacity onPress={this.onPrivacy}>
+								<Touchable activeOpacity={0.2} onPress={this.onPrivacy}>
 									<SubInfoLink>{t.s('privacyPolicy')}</SubInfoLink>
-								</TouchableOpacity>
+								</Touchable>
 							)}
 						</Fragment>
 					))}

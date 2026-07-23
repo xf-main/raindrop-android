@@ -1,6 +1,7 @@
 import { forwardRef, useState, useCallback, useEffect } from 'react';
 import { PropTypes } from 'prop-types'
-import { FlatList } from 'react-native-gesture-handler'
+import { View, StyleSheet } from 'react-native'
+import { LegacyFlatList as FlatList } from 'react-native-gesture-handler'
 import Animated, { useSharedValue } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
@@ -93,14 +94,19 @@ function Sortable({ reorder, ...props}) {
                     }} />
             </Gesture>
 
-            <Ghost
-                {...props}
+            {/* always-mounted wrapper: Ghost appears/disappears inside it, because
+                mounting siblings next to the display:contents GestureDetector
+                crashes Fabric (YGNodeGetOwner assertion, facebook/react-native#52349) */}
+            <View style={StyleSheet.absoluteFill} pointerEvents='box-none'>
+                <Ghost
+                    {...props}
 
-                selected={selected}
-                
-                measure={measure}
-                windowX={windowX}
-                windowY={windowY} />
+                    selected={selected}
+
+                    measure={measure}
+                    windowX={windowX}
+                    windowY={windowY} />
+            </View>
         </>
     )
 }

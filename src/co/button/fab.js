@@ -1,6 +1,6 @@
 import styled from 'styled-components/native'
 import { StyleSheet } from 'react-native'
-import { TouchableOpacity } from 'react-native-gesture-handler'
+import { Touchable } from 'react-native-gesture-handler'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import Icon from '../icon'
@@ -10,7 +10,8 @@ const Wrap = styled.View`
     ${({ side }) => side === 'left' ? 'left: 24px;' : 'right: 24px;'}
 `
 
-const Button = styled(TouchableOpacity).attrs({
+const Button = styled(Touchable).attrs({
+    activeOpacity: 0.2,
     hitSlop: {top: 24, bottom: 24, left: 24, right: 24}
 })`
     width: 56px;

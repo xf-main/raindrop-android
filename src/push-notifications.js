@@ -14,6 +14,10 @@ export default function PushNotifications({ children }) {
             .then(token=>
                 Api._post('user/connect/fcm_device', { token })
             )
+            //best effort: FIS_AUTH_ERROR etc. on emulators/devices without valid play services
+            .catch(e=>
+                console.warn('push notifications registration failed:', e?.message)
+            )
     }, [_id])
 
     return children

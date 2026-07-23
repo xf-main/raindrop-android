@@ -1,10 +1,11 @@
 import _ from 'lodash'
 import { Platform } from 'react-native'
 import styled from 'styled-components/native'
-import { TouchableOpacity } from 'react-native-gesture-handler'
+import { Touchable } from 'react-native-gesture-handler'
 
-export const ButtonTouch = styled(TouchableOpacity).attrs(({ disabled=false, enabled=true })=>({
-    enabled: disabled ? false : enabled,
+export const ButtonTouch = styled(Touchable).attrs(({ disabled=false, enabled=true })=>({
+    activeOpacity: 0.2,
+    disabled: disabled || !enabled,
     ...(!enabled || disabled ? {
         pointerEvents: 'none'
     } : {})

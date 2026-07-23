@@ -1,5 +1,5 @@
 import styled from 'styled-components/native'
-import { FlatList } from 'react-native-gesture-handler'
+import { LegacyFlatList as FlatList } from 'react-native-gesture-handler'
 import Animated from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 

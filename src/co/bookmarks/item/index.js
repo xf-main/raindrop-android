@@ -1,5 +1,6 @@
 import { Component } from 'react'
 import { Alert } from 'react-native'
+import t from 't'
 
 import { connect } from 'react-redux'
 import * as actions from 'data/actions/bookmarks'

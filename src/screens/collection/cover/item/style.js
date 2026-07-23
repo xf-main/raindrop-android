@@ -1,12 +1,12 @@
 import styled from 'styled-components/native'
-import { TouchableNativeFeedback } from 'react-native-gesture-handler'
+import { Touchable } from 'react-native-gesture-handler'
 import { itemHeight, iconHeight } from '../config'
 
 export const Container = styled.View`
     flex: 0.2;
 `
 
-export const Press = styled(TouchableNativeFeedback)`
+export const Press = styled(Touchable).attrs({ androidRipple: {} })`
     flex: 1;
     align-items: center;
     justify-content: center;

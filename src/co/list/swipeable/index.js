@@ -1,6 +1,7 @@
-import { Component } from 'react';
-import { Animated } from 'react-native'
-import { PanGestureHandler, TapGestureHandler, State } from 'react-native-gesture-handler'
+import { useState, useRef, useCallback, useEffect } from 'react';
+import Animated, { useSharedValue, useAnimatedStyle, interpolate, Extrapolation, withSpring } from 'react-native-reanimated'
+import { Gesture, GestureDetector } from 'react-native-gesture-handler'
+import { scheduleOnRN } from 'react-native-worklets'
 import { width } from './button'
 import Context from './context'
 
@@ -8,191 +9,144 @@ export * from './button'
 
 let opened = new Set([])
 
-export default class MySwipeable extends Component {
-    static defaultProps = {
-        left: undefined, //react element
-        right: undefined //react elements
-    }
+//tuned to feel like the previous Animated.spring({ bounciness: 5 })
+const spring = {
+    stiffness: 180,
+    damping: 22,
+    mass: 1,
+    restSpeedThreshold: 10.7,
+    restDisplacementThreshold: 0.4,
+}
 
-    state = {
-        value: 0,
-        sides: [0],
-        left: {},
-        right: {},
-        connected: false
-    }
+const sideStyle = {
+    flexDirection: 'row',
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+}
 
-    x = new Animated.Value(0)
-    onGestureEvent = Animated.event(
-        [{ nativeEvent: { translationX: this.x } }],
-        { useNativeDriver: false }
-    )
-    mainStyle = {
-        transform: [{ translateX: this.x }]
-    }
-    _activeOffsetX = [-10, 50]
+export default function MySwipeable({ left, right, children }) {
+    const [value, setValue] = useState(0)
 
-    componentWillUnmount() {
-        opened.delete(this.actions.close)
-    }
+    const x = useSharedValue(0)
+    const startX = useSharedValue(0)
 
-    onHandlerStateChange = ({ nativeEvent: { oldState, translationX, velocityX } }) => {
-        switch(oldState) {
-            case State.BEGAN:
-                this.connect()
-                this.x.setValue(0)
-                this.x.setOffset(this.state.value)
-            break
+    //the whole tree is static: strips and their buttons are permanently mounted,
+    //closed strips just sit translated off-screen. Buttons are Touchables which
+    //render display:contents native views, and mounting/unmounting those while
+    //reanimated animates this subtree crashes Fabric (YGNodeGetOwner assertion,
+    //facebook/react-native#52349) — e.g. when closing one row while opening another
+    const leftComponent = left ? left() : undefined
+    const rightComponent = right ? right() : undefined
+    const leftWidth = (leftComponent ? (typeof leftComponent.length != 'undefined' ? leftComponent.length : 1) : 0) * width
+    const rightWidth = (rightComponent ? (typeof rightComponent.length != 'undefined' ? rightComponent.length : 1) : 0) * width
 
-            case State.ACTIVE:{
-                //descide where to go next
-                let side = this.state.sides.indexOf(this.state.value)
-                if (this.state.value)
-                    side = this.state.sides.indexOf(0)
-                else if (translationX < -50) side++
-                else if (translationX > 50) side--
+    let sides = [0]
+    if (leftWidth) sides.unshift(leftWidth)
+    if (rightWidth) sides.push(-rightWidth)
 
-                side = Math.min(Math.max(side, 0), this.state.sides.length-1)
+    //instance methods, reassigned every render so they see fresh props/state,
+    //called through stable wrappers below (worklets and `opened` need stable identities).
+    //sides/value are mirrored synchronously: settle() may run before react commits
+    const self = useRef({}).current
+    self.sides = sides
 
-                this.scroll(this.state.sides[side], { translationX, velocityX })
-            }break
-        }
-    }
-
-    onTap = ({ nativeEvent: { oldState } }) => {
-        if (oldState == State.ACTIVE)
-            this.actions.close()
-    }
-
-    scroll = (value, event={})=>{
-        const { velocityX=0, translationX=0 } = event
-
-        if (value){
-            opened.add(this.actions.close)
-        }
-
-        this.x.setValue(this.state.value+translationX)
-        this.x.setOffset(0)
-        this.setState({ value }, ()=>{
-            Animated.spring(this.x, {
-                velocity: velocityX,
-                restSpeedThreshold: 10.7,
-                restDisplacementThreshold: 0.4,
-                bounciness: 5,
-                toValue: this.state.value,
-                useNativeDriver: false,
-            }).start(({ finished })=>{
-                if (finished && !this.state.value)
-                    this.unconnect()
-            })
-        })
-    }
-
-    connect = ()=>{
-        if (this.state.connected) return
+    self.closeOthers = () => {
+        if (self.value) return
 
         for(const close of opened)
             close()
+    }
 
-        let sides = [0]
+    self.scroll = (target, velocityX=0) => {
+        if (target)
+            opened.add(close)
+        else
+            opened.delete(close)
 
-        //left
-        let left = {
-            component: this.props.left ? this.props.left() : undefined
-        }
-        left.width = (left.component ? (typeof left.component.length != 'undefined' ? left.component.length : 1) : 0) * width
+        self.value = target
+        setValue(target)
 
-        if (left.width) {
-            sides.unshift(left.width)
+        x.value = withSpring(target, { ...spring, velocity: velocityX })
+    }
 
-            left.style = {
-                flexDirection: 'row', 
-                position: 'absolute', 
-                left: 0, 
-                top: 0, 
-                bottom: 0, 
-                transform: [{ translateX: this.x.interpolate({
-                    inputRange: [0, left.width],
-                    outputRange: [-left.width, 0],
-                    extrapolate: 'clamp'
-                }) }]
-            }
-        }
+    //descide where to go next
+    self.settle = (translationX, velocityX) => {
+        const { sides, value=0 } = self
 
-        //right
-        let right = {
-            component: this.props.right ? this.props.right() : []
-        }
-        right.width = (right.component ? (typeof right.component.length != 'undefined' ? right.component.length : 1) : 0) * width
+        let side = sides.indexOf(value)
+        if (value)
+            side = sides.indexOf(0)
+        else if (translationX < -50) side++
+        else if (translationX > 50) side--
 
-        if (right.width) {
-            sides.push(-right.width)
+        side = Math.min(Math.max(side, 0), sides.length-1)
 
-            right.style = {
-                flexDirection: 'row', 
-                position: 'absolute', 
-                right: 0, 
-                top: 0, 
-                bottom: 0, 
-                transform: [{ translateX: this.x.interpolate({
-                    inputRange: [-right.width, 0],
-                    outputRange: [0, right.width],
-                    extrapolate: 'clamp'
-                }) }]
-            }
-        }
+        self.scroll(sides[side], velocityX)
+    }
 
-        this.setState({ 
-            sides, 
-            left, 
-            right,
-            connected: true
+    const closeOthers = useCallback(()=>self.closeOthers(), [])
+    const settle = useCallback((translationX, velocityX)=>self.settle(translationX, velocityX), [])
+    const close = useCallback(()=>self.scroll(0), [])
+
+    useEffect(() => () => { opened.delete(close) }, [])
+
+    const actions = useRef({ close }).current
+
+    //builder api on purpose: it goes through the legacy detector which attaches to
+    //the child directly, without the display:contents native view the v3 hooks
+    //detector renders (that node crashes Fabric when list rows recycle mid-animation)
+    const pan = Gesture.Pan()
+        .enabled(left || right ? true : false)
+        .activeOffsetX([-10, 50])
+        .onBegin(() => {
+            startX.value = x.value
+            scheduleOnRN(closeOthers)
         })
-    }
-
-    unconnect = ()=>{
-        opened.delete(this.actions.close)
-        
-        this.setState({
-            left: {},
-            right: {},
-            connected: false
+        .onUpdate(e => {
+            x.value = startX.value + e.translationX
         })
-    }
+        .onEnd(e => {
+            scheduleOnRN(settle, e.translationX, e.velocityX)
+        })
 
-    actions = {
-        close: ()=>{
-            this.scroll(0)
-        }
-    }
+    const tap = Gesture.Tap()
+        .enabled(value ? true : false)
+        .onStart(() => {
+            scheduleOnRN(close)
+        })
 
-    render() {
-        return (
-            <Context.Provider value={this.actions}>
-                <Animated.View style={this.state.left.style}>
-                    {this.state.left.width ? this.state.left.component : undefined}
+    const gesture = Gesture.Race(pan, tap)
+
+    const leftStyle = useAnimatedStyle(() => ({
+        transform: [{ translateX: interpolate(x.value, [0, leftWidth || 1], [-(leftWidth || 1), 0], Extrapolation.CLAMP) }]
+    }), [leftWidth])
+
+    const rightStyle = useAnimatedStyle(() => ({
+        transform: [{ translateX: interpolate(x.value, [-(rightWidth || 1), 0], [0, rightWidth || 1], Extrapolation.CLAMP) }]
+    }), [rightWidth])
+
+    const mainStyle = useAnimatedStyle(() => ({
+        transform: [{ translateX: x.value }]
+    }))
+
+    return (
+        <Context.Provider value={actions}>
+            <Animated.View style={[sideStyle, { left: 0 }, leftStyle]}>
+                {leftComponent}
+            </Animated.View>
+
+            <Animated.View style={[sideStyle, { right: 0 }, rightStyle]}>
+                {rightComponent}
+            </Animated.View>
+
+            <GestureDetector gesture={gesture}>
+                <Animated.View
+                    pointerEvents={value ? 'box-only' : 'auto'}
+                    style={mainStyle}>
+                    {children}
                 </Animated.View>
-                
-                <Animated.View style={this.state.right.style}>
-                    {this.state.right.width ? this.state.right.component : undefined}
-                </Animated.View>
-
-                <PanGestureHandler 
-                    enabled={this.props.left || this.props.right ? true : false}
-                    activeOffsetX={this._activeOffsetX}
-                    onGestureEvent={this.onGestureEvent}
-                    onHandlerStateChange={this.onHandlerStateChange}>
-                    <TapGestureHandler
-                        enabled={this.state.value ? true : false}
-                        onHandlerStateChange={this.onTap}>
-                        <Animated.View 
-                            pointerEvents={this.state.value ? 'box-only' : 'auto'}
-                            style={this.mainStyle}>
-                            {this.props.children}
-                        </Animated.View>
-                    </TapGestureHandler>
-                </PanGestureHandler>
-            </Context.Provider>
-        )
-    }
+            </GestureDetector>
+        </Context.Provider>
+    )
 }

@@ -52,7 +52,7 @@ export const makeCreatorRef = ()=>createSelector(
 
 export const makeSuggestedFields = ()=>createSelector(
 	[
-		({bookmarks}, { link })=>bookmarks.suggestedFields[link] || {},
+		({bookmarks}, { link })=>bookmarks.suggestedFields[link] || emptyObject,
 		(_, { collectionId })=>collectionId,
 		(_, { tags })=>tags,
 		(_, { new_tags })=>new_tags

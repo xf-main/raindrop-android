@@ -1,5 +1,5 @@
 import styled from 'styled-components/native'
-import { TouchableOpacity } from 'react-native-gesture-handler'
+import { Touchable } from 'react-native-gesture-handler'
 import Icon from 'co/icon'
 import { dragItemStyle } from 'co/list/flat/sortable'
 
@@ -42,7 +42,7 @@ export const ListCover = styled.View`
 	margin-right: ${gap}px;
 `
 
-export const ListMoreButton = styled(TouchableOpacity)`
+export const ListMoreButton = styled(Touchable).attrs({ activeOpacity: 0.2 })`
 	padding-top: ${gap}px;
 	padding-horizontal: ${({theme})=>theme.padding.medium}px;
 `
@@ -70,7 +70,7 @@ export const GridInfo = styled.View`
 	padding-vertical: ${({theme})=>theme.padding.small}px;
 `
 
-export const GridMoreButton = styled(TouchableOpacity)`
+export const GridMoreButton = styled(Touchable).attrs({ activeOpacity: 0.2 })`
 	alignSelf: flex-end;
 	width: 36px;
 	height: 36px;

@@ -108,32 +108,37 @@ function* req(url, options={}, retries=0) {
 		finalURL = url
 
 	let errorMessage = 'failed to load'
+	let status
 
 	for(let i = 0; i <= retries; i++){
+		const abort = new AbortController()
+
 		try{
 			const winner = yield race({
-				req: call(fetchWrap, finalURL, {...defaultOptions, ...options}),
+				req: call(fetchWrap, finalURL, {...defaultOptions, ...options, signal: abort.signal}),
 				...( options.timeout !== 0 ? { t: delay(API_TIMEOUT) } : {}) //timeout could be turned off if options.timeout=0
 			})
 
-			if (!winner.req)
+			if (!winner.req){
+				abort.abort()
 				throw new ApiError({ status: 408 })
+			}
 
 			return winner.req;
 		}catch(e){
 			errorMessage = e.message || ''
+			status = e.status
 
-			//stop if client error
-			if (e && e.status && e.status >= 400 && e.status < 500)
+			//stop if client error, except timeout, which is exactly the case worth retrying
+			if (e && e.status && e.status >= 400 && e.status < 500 && e.status != 408)
 				break;
-			//retry
-			else if(i < retries-1) {
-				yield delay(100 + (retries * 100) ); //stop 100ms and try again
-			}
+			//exponential backoff, gives the network time to recover (doze, wi-fi wake, etc)
+			else if(i < retries)
+				yield delay(Math.min(500 * 2 ** i, 5000) + Math.random() * 250)
 		}
 	}
 
-	throw new ApiError({ errorMessage: `${errorMessage} ${finalURL}` })
+	throw new ApiError({ status, errorMessage: `${errorMessage} ${finalURL}` })
 }
 
 const fetchWrap = (url, options)=>(

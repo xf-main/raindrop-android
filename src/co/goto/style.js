@@ -1,9 +1,9 @@
 import styled from 'styled-components/native'
 import { StyleSheet } from 'react-native'
-import { TouchableOpacity } from 'react-native-gesture-handler'
+import { Touchable } from 'react-native-gesture-handler'
 import { baseFormElementStyle } from 'co/form'
 
-export const ActionButton = styled(TouchableOpacity)`
+export const ActionButton = styled(Touchable).attrs({ activeOpacity: 0.2 })`
 	padding-horizontal: ${({theme})=>theme.padding.medium}px;
 	margin-horizontal: ${({theme})=>theme.padding.medium*-1}px;
 	height: ${({theme})=>theme.height.item}px;

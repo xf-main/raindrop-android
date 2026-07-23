@@ -1,6 +1,6 @@
 import { StyleSheet } from 'react-native'
 import styled from 'styled-components/native'
-import { TouchableOpacity } from 'react-native-gesture-handler'
+import { Touchable } from 'react-native-gesture-handler'
 import size from 'modules/appearance/size'
 import { dragItemStyle } from 'co/list/flat/sortable'
 
@@ -76,7 +76,7 @@ export const ItemCount = styled.Text.attrs({
 	}}
 `
 
-export const Action = styled(TouchableOpacity)`
+export const Action = styled(Touchable).attrs({ activeOpacity: 0.2 })`
 	padding: 0 ${({theme})=>theme.padding.medium}px;
 	height: ${({theme})=>theme.height.item}px;
 	align-items: center;

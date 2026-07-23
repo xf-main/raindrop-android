@@ -1,5 +1,5 @@
 import styled from 'styled-components/native'
-import { TouchableOpacity, ScrollView } from 'react-native-gesture-handler'
+import { Touchable, LegacyScrollView as ScrollView } from 'react-native-gesture-handler'
 
 export const Strip = styled(ScrollView).attrs({
     horizontal: true,
@@ -16,7 +16,7 @@ export const Wrap = styled.View`${({ theme })=>`
     gap: ${theme.padding.small+theme.padding.micro}px;
 `}`
 
-export const CollectionTap = styled(TouchableOpacity)`${({ theme })=>`
+export const CollectionTap = styled(Touchable).attrs({ activeOpacity: 0.2 })`${({ theme })=>`
     border-radius: ${theme.padding.medium}px;
 `}`
 

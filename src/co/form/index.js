@@ -1,5 +1,5 @@
 import { StyleSheet } from 'react-native'
-import { TextInput, ScrollView } from 'react-native-gesture-handler'
+import { LegacyTextInput as TextInput, LegacyScrollView as ScrollView } from 'react-native-gesture-handler'
 import { useReanimatedKeyboardAnimation } from 'react-native-keyboard-controller'
 import Animated, { useAnimatedStyle } from 'react-native-reanimated'
 import styled, { useTheme } from 'styled-components/native'

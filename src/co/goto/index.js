@@ -1,5 +1,5 @@
 import Icon from 'co/icon'
-import { TouchableNativeFeedback } from 'react-native-gesture-handler'
+import { Touchable } from 'react-native-gesture-handler'
 import {
 	ImageView,
 	GotoView,
@@ -37,14 +37,14 @@ const Goto = ({
 	}
 
 	return (
-		<TouchableNativeFeedback onPress={onPress}>
+		<Touchable androidRipple={{}} onPress={onPress}>
 			<GotoView last={last}>
 				{iconItself ? <ImageView>{iconItself}</ImageView> : null}
 				<GotoTitleText ellipsizeMode={ellipsizeMode} fontFamily={labelFontFamily}>{label}</GotoTitleText>
 				<GotoActionText badge={subLabelBadge}>{subLabel}</GotoActionText>
 				{onActionPress ? <ActionButton onPress={onActionPress}>{actionIcon}</ActionButton> : actionIcon}
 			</GotoView>
-		</TouchableNativeFeedback>
+		</Touchable>
 	)
 }
 

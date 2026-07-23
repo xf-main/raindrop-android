@@ -1,54 +1,29 @@
-import { createSelector } from 'reselect'
 import {
 	blankCurrent
 } from '../helpers/user'
 
-export const user = createSelector(
-	[({user={}})=>{
-		if (!user.getIn(['current', '_id']))
-			return blankCurrent
-		
-		return user.current
-	}],
-	(current)=>current
-)
+export const user = ({user={}})=>{
+	if (!user.getIn(['current', '_id']))
+		return blankCurrent
 
-export const userStatus = createSelector(
-	[({user={}})=>{
-		return user.status
-	}],
-	(status)=>status
-)
+	return user.current
+}
 
-export const errorReason = createSelector(
-	[({user={}})=>{
-		return user.errorReason
-	}],
-	(errorReason)=>errorReason
-)
+export const userStatus = ({user={}})=>{
+	return user.status
+}
 
-export const isNotAuthorized = createSelector(
-	[({user={}})=>{
-		return user.getIn(['status', 'authorized'])
-	}],
-	(authorized)=>authorized=='no'
-)
+export const errorReason = ({user={}})=>{
+	return user.errorReason
+}
 
-export const isLogged = createSelector(
-	[({user={}})=>{
-		return user.status
-	}],
-	(isLogged)=>isLogged=='loaded'
-)
+export const isNotAuthorized = ({user={}})=>
+	user.getIn(['status', 'authorized'])=='no'
 
-export const isPro = createSelector(
-	[({user={}})=>{
-		return user.getIn(['current', 'pro'])
-	}],
-	(isPro)=>isPro?true:false
-)
+export const isLogged = ({user={}})=>
+	user.status=='loaded'
 
-export const subscription = createSelector(
-	[({user={}})=>user.subscription],
-	(subscription)=>subscription
-)
+export const isPro = ({user={}})=>
+	user.getIn(['current', 'pro']) ? true : false
+
+export const subscription = ({user={}})=>user.subscription

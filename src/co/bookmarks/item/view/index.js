@@ -1,7 +1,7 @@
 import { Component } from 'react';
 import { View } from 'react-native'
 import Swipeable, { Button } from 'co/list/swipeable'
-import { TouchableNativeFeedback } from 'react-native-gesture-handler'
+import { Touchable } from 'react-native-gesture-handler'
 
 import ListView from './list'
 import SimpleView from './simple'
@@ -52,9 +52,9 @@ export default class BookmarkView extends Component {
 			case 'masonry':{
 				return (
 					<View style={flexOne}>
-						<TouchableNativeFeedback onPress={onItemPress} >
+						<Touchable androidRipple={{}} onPress={onItemPress} >
 							<GridView {...etc} />
-						</TouchableNativeFeedback>
+						</Touchable>
 					</View>
 				)
 			}
@@ -64,10 +64,11 @@ export default class BookmarkView extends Component {
 					<Swipeable 
 						left={etc.showActions && !etc.selectModeEnabled ? this.leftActions : undefined}
 						right={etc.showActions && !etc.selectModeEnabled ? this.rightActions : undefined}>
-						<TouchableNativeFeedback 
+						<Touchable
+							androidRipple={{}}
 							onPress={onItemPress}>
 							{view == 'simple' ? SimpleView(etc) : ListView(etc)}
-						</TouchableNativeFeedback>
+						</Touchable>
 					</Swipeable>
 				)
 			}

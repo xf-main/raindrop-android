@@ -1,6 +1,6 @@
 import { Component } from 'react';
 import { View } from 'react-native'
-import { TouchableOpacity } from 'react-native-gesture-handler'
+import { Touchable } from 'react-native-gesture-handler'
 import { connect } from 'react-redux'
 import { collection } from 'data/selectors/collections'
 import Icon from 'co/collections/item/icon'
@@ -25,8 +25,8 @@ class CommonCollectionContainer extends Component {
 		const {_id, title, cover=[]} = this.props
 
 		return (
-			<TouchableOpacity
-				containerStyle={touchableStyle}
+			<Touchable
+				activeOpacity={0.2}
 				style={touchableStyle}
 				onPress={this.onPress}
 				hitSlop={{top: 8, bottom: 8, left: 8, right: 8}}>
@@ -34,7 +34,7 @@ class CommonCollectionContainer extends Component {
 					<Icon collectionId={_id} src={cover[0]} size={16} />
 				</View>
 				<ItemSubinfo numberOfLines={1}>{title}</ItemSubinfo>
-			</TouchableOpacity>
+			</Touchable>
 		)
 	}
 }
